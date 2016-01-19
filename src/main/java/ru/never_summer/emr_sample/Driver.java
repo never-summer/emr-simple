@@ -22,29 +22,21 @@ public class Driver {
 			System.out.println("Usage: <inDir> <outDir> and optional<countReducer>");
 		}
 		Configuration conf = new Configuration();
-		Job job = Job.getInstance(conf, "simple emr site count");
+		Job job = Job.getInstance(conf, "warc file count response http(s)");
 		job.setJarByClass(Driver.class);
 		job.setMapperClass(Map.class);
 		job.setReducerClass(Reduce.class);
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(IntWritable.class);
-		// if exist, set count reducer
-		if (args.length == 2) {
-			try {
-				int reducerCount = Integer.parseInt(args[2]);
-				job.setNumReduceTasks(reducerCount);
-			} catch (Exception e) {
-				System.out.println("Can't parse count reducer");
-			}
-		}
+		job.setInputFormatClass(WARCFileInputFormat.class);
 		// add input paths for job
-		FileInputFormat.addInputPath(job, new Path(args[0]));
-		// addInputPaths(args[0], job);
+		// FileInputFormat.addInputPath(job, new Path(args[0]));
+		addInputPaths(job, args[0]);
 		FileOutputFormat.setOutputPath(job, new Path(args[1]));
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}
 
-	public static void addInputPaths(Job job, String urlFeil) throws IOException {
+	private static void addInputPaths(Job job, String urlFeil) throws IOException {
 		final String awsPublic = "s3://aws-publicdatasets/";
 		URL url = new URL(urlFeil);
 		URLConnection connection = url.openConnection();
@@ -57,8 +49,10 @@ public class Driver {
 		// Now read lines of text: the BufferedReader puts them in lines,
 		// the InputStreamReader does Unicode conversion, and the
 		// GZipInputStream "gunzip"s the data from the FileInputStream.
-		while ((line = br.readLine()) != null)
+		while ((line = br.readLine()) != null) {
 			FileInputFormat.addInputPath(job, new Path(awsPublic + line));
+			System.out.println("addInputPath:" + awsPublic + line);
+		}
 
 	}
 }

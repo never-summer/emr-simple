@@ -2,26 +2,26 @@ package ru.never_summer.emr_sample;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.archive.io.ArchiveReader;
+import org.archive.io.ArchiveRecord;
 
-public class Map extends Mapper<Object, Text, Text, IntWritable> {
-	private static final Pattern pattern = Pattern.compile("(https?|http)://*");
-	private final static IntWritable one = new IntWritable(1);
+public class Map extends Mapper<Object, ArchiveReader, Text, IntWritable> {
+	private final static IntWritable outValOne = new IntWritable(1);
+	private Text outKey = new Text();
 
-	public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-		String tmp = value.toString();
-		Matcher matcher = pattern.matcher(tmp);
-		if (matcher.find()) {
+	public void map(Object key, ArchiveReader value, Context context) throws IOException, InterruptedException {
+		for (ArchiveRecord r : value) {
 			try {
-				URL url = new URL(tmp);
-				context.write(new Text(url.getHost()), one);
-			} catch (Exception e) {
-				e.printStackTrace();
+				if (r.getHeader().getMimetype().equals("application/http; msgtype=response")) {
+					URL url = new URL(r.getHeader().getUrl().toLowerCase());
+					outKey.set(url.getProtocol() + "://" + url.getHost());
+					context.write(outKey, outValOne);
+				}
+			} catch (Exception ex) {
+
 			}
 		}
 	}
