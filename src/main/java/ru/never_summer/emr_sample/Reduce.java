@@ -3,16 +3,17 @@ package ru.never_summer.emr_sample;
 import java.io.IOException;
 
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-public class Reduce extends Reducer<Text, IntWritable, Text, IntWritable> {
-	private IntWritable result = new IntWritable();
+public class Reduce extends Reducer<Text, LongWritable, Text, LongWritable> {
+	private LongWritable result = new LongWritable();
 
-	public void reduce(Text key, Iterable<IntWritable> values, Context context)
+	public void reduce(Text key, Iterable<LongWritable> values, Context context)
 			throws IOException, InterruptedException {
 		int sum = 0;
-		for (IntWritable val : values) {
+		for (LongWritable val : values) {
 			sum += val.get();
 		}
 		result.set(sum);
