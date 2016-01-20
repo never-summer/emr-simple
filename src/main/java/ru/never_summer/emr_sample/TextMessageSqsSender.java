@@ -54,7 +54,7 @@ public class TextMessageSqsSender implements Runnable {
 	private static void sendMessages(Session session, MessageProducer producer,
 			ConcurrentLinkedQueue<String> listMessages) throws JMSException {
 		String msg = null;
-		if (!listMessages.isEmpty()) {
+		while (!listMessages.isEmpty()) {
 			msg = listMessages.poll();
 			if (msg != null) {
 				TextMessage message = session.createTextMessage(msg);
