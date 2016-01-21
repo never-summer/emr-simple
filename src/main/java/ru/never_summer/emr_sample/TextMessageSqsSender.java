@@ -7,6 +7,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import com.amazon.sqs.javamessaging.AmazonSQSMessagingClientWrapper;
 import com.amazon.sqs.javamessaging.SQSConnection;
 import com.amazon.sqs.javamessaging.SQSConnectionFactory;
 import com.amazonaws.regions.Region;
@@ -36,6 +37,9 @@ public class TextMessageSqsSender implements Runnable {
 			// Create the connection
 			SQSConnection connection = connectionFactory.createConnection(awsAccessKeyId, awsSecretKey);
 
+			// Create the queue if needed
+			ensureQueueExists(connection, myQueueName);
+
 			// Create the session
 			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			MessageProducer producer = session.createProducer(session.createQueue(myQueueName));
@@ -62,6 +66,21 @@ public class TextMessageSqsSender implements Runnable {
 			}
 		}
 
+	}
+
+	public static void ensureQueueExists(SQSConnection connection, String queueName) throws JMSException {
+		AmazonSQSMessagingClientWrapper client = connection.getWrappedAmazonSQSClient();
+
+		/**
+		 * For most cases this could be done with just a createQueue call, but
+		 * GetQueueUrl (called by queueExists) is a faster operation for the
+		 * common case where the queue already exists. Also many users and roles
+		 * have permission to call GetQueueUrl but do not have permission to
+		 * call CreateQueue.
+		 */
+		if (!client.queueExists(queueName)) {
+			client.createQueue(queueName);
+		}
 	}
 
 }

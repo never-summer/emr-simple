@@ -53,8 +53,8 @@ public class Driver {
 		job.setOutputValueClass(LongWritable.class);
 		job.setInputFormatClass(WARCFileInputFormat.class);
 		// add input paths for job
-		FileInputFormat.addInputPath(job, new Path(args[0]));
-		// addInputPaths(job, args[0]);
+		// FileInputFormat.addInputPath(job, new Path(args[0]));
+		addInputPaths(job, args[0]);
 		String outPath = args[1];
 		String bucketName = args[2];
 		FileOutputFormat.setOutputPath(job, new Path(S3 + bucketName + "/" + outPath));
