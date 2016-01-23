@@ -45,6 +45,7 @@ public class Driver {
 		}
 
 		Configuration conf = new Configuration();
+		conf.setLong("mapreduce.task.timeout", 0);
 		Job job = Job.getInstance(conf, "warc file count response http(s)");
 		job.setJarByClass(Driver.class);
 		job.setMapperClass(Map.class);
