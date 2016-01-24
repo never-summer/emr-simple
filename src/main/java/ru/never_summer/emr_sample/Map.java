@@ -29,6 +29,9 @@ public class Map extends Mapper<Object, ArchiveReader, Text, LongWritable> {
 	private Matcher matcherTag;
 
 	public void map(Object key, ArchiveReader value, Context context) throws IOException, InterruptedException {
+		// public void map(Object key, ArchiveReader value,
+		// OutputCollector<Text, LongWritable> output, Reporter reporter)
+		// throws IOException, InterruptedException {
 		patternTag = Pattern.compile(HTML_TAG_PATTERN);
 		for (ArchiveRecord r : value) {
 			try {
@@ -44,7 +47,6 @@ public class Map extends Mapper<Object, ArchiveReader, Text, LongWritable> {
 					// In our task, we're only interested in text/html, so we
 					// can be a little lax
 					if (headerText.contains("Content-Type: text/html")) {
-						context.getCounter(MAPPERCOUNTER.RECORDS_IN).increment(1);
 						// Only extract the body of the HTTP response when
 						// necessary
 						// Due to the way strings work in Java, we don't use any
@@ -57,12 +59,14 @@ public class Map extends Mapper<Object, ArchiveReader, Text, LongWritable> {
 							String tagName = matcherTag.group(1);
 							outKey.set(tagName.toLowerCase());
 							context.write(outKey, outVal);
+							// output.collect(outKey, outVal);
+							// reporter.progress();
 						}
 					}
 				}
 			} catch (Exception ex) {
 				LOG.error("Caught Exception:", ex);
-				context.getCounter(MAPPERCOUNTER.EXCEPTIONS).increment(1);
+				// context.getCounter(MAPPERCOUNTER.EXCEPTIONS).increment(1);
 			}
 		}
 	}
